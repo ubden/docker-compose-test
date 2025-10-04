@@ -2,21 +2,18 @@ version: "3.9"
 
 services:
   next-app:
-    container_name: next-app
     build:
       context: ./next-app
       dockerfile: prod.Dockerfile
       args:
         ENV_VARIABLE: ${ENV_VARIABLE}
         NEXT_PUBLIC_ENV_VARIABLE: ${NEXT_PUBLIC_ENV_VARIABLE}
-    restart: unless-stopped
-    expose:
-      - "3000"   # dış port açma, NPM bu iç porta yönlendirecek
-    networks:
-      - proxy-bridge
-    environment:
-      - TZ=Europe/Istanbul
-
-networks:
-  proxy-bridge:
-    external: true
+    restart: always
+    ports:
+      - 3000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.next-app.rule=Host(`test-app.1vs.co`)
+      - traefik.http.routers.next-app.entrypoints=websecure
+      - traefik.http.routers.next-app.tls.certResolver=letsencrypt
+      - traefik.http.services.next-app.loadbalancer.server.port=3000
